@@ -1,0 +1,39 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Display dimensions
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
+
+// Weather API
+#define OPENWEATHER_API_KEY "298df16328c61887ef48acf90a8121bc"
+#define DEFAULT_LAT "40.7128"
+#define DEFAULT_LON "-74.0060"
+#define DEFAULT_CITY "New York, NY"
+#define WEATHER_UPDATE_INTERVAL 600000
+
+// Colors
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+#define COLOR_BLUE 0x001F
+#define COLOR_LIGHT_BLUE 0x5FFF
+#define COLOR_CYAN 0x07FF
+#define COLOR_ORANGE 0xFD20
+#define COLOR_RED 0xF800
+#define COLOR_GREEN 0x07E0
+#define COLOR_DARK_GREEN 0x0380
+#define COLOR_GRAY 0x8410
+#define COLOR_DARK_GRAY 0x4208
+#define COLOR_BG 0x0005
+#define COLOR_YELLOW 0xFFE0
+#define COLOR_PURPLE 0x8010
+
+// UI States
+enum UIState {
+    WIFI_SETUP,
+    LOADING,
+    CURRENT_WEATHER,
+    HOURLY_FORECAST,
+    FORECAST_5DAY,
+    FORECAST_7DAY
+};
