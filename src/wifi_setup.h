@@ -2,6 +2,7 @@
 #define WIFI_SETUP_H
 
 #include <WiFi.h>
+#include <WiFiManager.h>
 #include <EEPROM.h>
 
 class WiFiSetup {
@@ -9,15 +10,47 @@ private:
     String ssid = "";
     String password = "";
     bool setupComplete = false;
+    bool webPortalActive = false;
     const int EEPROM_SIZE = 512;
+    WiFiManager wifiManager;
     
 public:
     void begin() {
         EEPROM.begin(EEPROM_SIZE);
         loadFromEEPROM();
         
+        // Set up WiFiManager
+        wifiManager.setConfigPortalTimeout(300); // 5 minutes timeout
+        wifiManager.setHostname("WeatherStation");
+        
+        // Try to connect with saved credentials first
         if (!ssid.isEmpty() && !password.isEmpty()) {
             connectToWiFi();
+            
+            // If that fails, start config portal
+            if (!setupComplete) {
+                startConfigPortal();
+            }
+        } else {
+            // No saved credentials, start config portal
+            startConfigPortal();
+        }
+    }
+    
+    void startConfigPortal() {
+        webPortalActive = true;
+        
+        // Create hotspot
+        if (!wifiManager.startConfigPortal("WeatherStation-Setup")) {
+            Serial.println("Config portal timeout - using display setup");
+            webPortalActive = false;
+        } else {
+            // Got new credentials from web portal
+            ssid = WiFi.SSID();
+            password = WiFi.psk();
+            saveToEEPROM();
+            setupComplete = true;
+            webPortalActive = false;
         }
     }
     
@@ -50,8 +83,20 @@ public:
         return WiFi.status() == WL_CONNECTED;
     }
     
+    bool isWebPortalActive() {
+        return webPortalActive;
+    }
+    
     String getIP() {
         return WiFi.localIP().toString();
+    }
+    
+    String getSSID() {
+        return ssid;
+    }
+    
+    String getPassword() {
+        return password;
     }
     
     void forget() {
@@ -59,6 +104,14 @@ public:
         EEPROM.commit();
         ssid = "";
         password = "";
+        wifiManager.resetSettings();
+    }
+    
+    void manualConnect(String newSsid, String newPassword) {
+        ssid = newSsid;
+        password = newPassword;
+        saveToEEPROM();
+        connectToWiFi();
     }
     
 private:
